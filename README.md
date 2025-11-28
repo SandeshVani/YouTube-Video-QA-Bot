@@ -1,2 +1,19 @@
-# YouTube-Video-QA-Bot
-Python-based AI application that lets users ask questions about any YouTube video and receive instant, accurate answers using LangChain, RAG, and vector databases.
+# 🎬 YouTube Video Q&A Bot
+
+Ask questions about any YouTube video using AI!
+
+## 🚀 Features
+
+- Extract transcripts from YouTube videos
+- Ask natural language questions
+- Get accurate answers using RAG
+- Beautiful web interface
+
+## 🛠️ Tech Stack
+
+- **Backend:** Python, Flask
+- **AI Framework:** LangChain
+- **LLM:** Google Gemini
+- **Embeddings:** HuggingFace (all-MiniLM-L6-v2)
+- **Vector DB:** ChromaDB
+
