@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Q&A Bot</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>🎬 YouTube Q&A Bot</h1>
+        <p class="subtitle">Ask questions about any YouTube video!</p>
+        
+        <div class="input-section">
+            <label for="url">Enter YouTube URL:</label>
+            <input 
+                type="text" 
+                id="url" 
+                placeholder="https://www.youtube.com/watch?v=..."
+            >
+            <button id="loadBtn" onclick="loadVideo()">
+                Load Video
+            </button>
+        </div>
+        
+        <div id="status" class="status hidden"></div>
+        
+        <div id="loading" class="loading hidden">
+            <div class="spinner"></div>
+            <p>Loading video... This may take a minute.</p>
+        </div>
+    </div>
+
+    <script>
+        async function loadVideo() {
+            const url = document.getElementById('url').value.trim();
+            const status = document.getElementById('status');
+            const loading = document.getElementById('loading');
+            const btn = document.getElementById('loadBtn');
+            
+            // Validate
+            if (!url) {
+                showStatus('❌ Please enter a YouTube URL', 'error');
+                return;
+            }
+            
+            // Show loading
+            loading.classList.remove('hidden');
+            btn.disabled = true;
+            btn.textContent = 'Loading...';
+            status.classList.add('hidden');
+            
+            try {
+                console.log('Sending URL:', url);
+                
+                const response = await fetch('/load', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ url: url })
+                });
+                
+                console.log('Response status:', response.status);
+                
+                // Check if response is OK
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('Response data:', data);
+                
+                // Hide loading
+                loading.classList.add('hidden');
+                btn.disabled = false;
+                btn.textContent = 'Load Video';
+                
+                if (data && data.success) {
+                    showStatus(
+                        `✅ Video loaded!<br>
+                         📌 ID: ${data.video_id}<br>
+                         📝 ${data.transcript_length} characters<br>
+                         ✂️ ${data.chunks} chunks`,
+                        'success'
+                    );
+                    
+                    // Redirect after 2 seconds
+                    setTimeout(() => {
+                        window.location.href = '/chat';
+                    }, 2000);
+                    
+                } else {
+                    const errorMsg = data ? data.error : 'Unknown error';
+                    showStatus('❌ Error: ' + errorMsg, 'error');
+                }
+                
+            } catch (error) {
+                console.error('Fetch error:', error);
+                
+                loading.classList.add('hidden');
+                btn.disabled = false;
+                btn.textContent = 'Load Video';
+                
+                showStatus('❌ Error: ' + error.message, 'error');
+            }
+        }
+        
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.innerHTML = message;
+            status.className = 'status ' + type;
+            status.classList.remove('hidden');
+        }
+        
+        // Enter key support
+        document.getElementById('url').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                loadVideo();
+            }
+        });
+    </script>
+</body>
+</html>
